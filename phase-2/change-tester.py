@@ -1,8 +1,12 @@
-import subprocess
 import os
 import re
+import subprocess
 
 from tree_sitter import Node, Language, Parser
+from monitors4codegen.multilspy.multilspy_config import MultilspyConfig
+from monitors4codegen.multilspy.multilspy_logger import MultilspyLogger
+
+from codeplan import *
 
 def parse_gumtree_output(gumtree_output: str) -> list[dict]:
   output: list[dict] = []
@@ -61,57 +65,9 @@ def parse_gumtree_output(gumtree_output: str) -> list[dict]:
   
 
 
-gumtree_path = '/home/jonah/Projects/github.com/konveyor-ecosystem/kai/gumtree-3.1.0-SNAPSHOT/bin/gumtree'
-before_path = '/home/jonah/Projects/kyma-prototyping/java-test-projects/complex-numbers/src/main/java/net/jsussman/inheritance/Simple.java'
-after_path = '/home/jonah/Projects/kyma-prototyping/java-test-projects/complex-numbers/src/main/java/net/jsussman/inheritance/SimpleEdited.java'
-tree_sitter_parser_path = '/home/jonah/Projects/github.com/konveyor-ecosystem/kai/tree-sitter-parser'
-
-# env = os.environ.copy()
-# env['PATH'] = tree_sitter_parser_path + ':' + os.environ.get('PATH')
-# output = subprocess.run(
-#   [gumtree_path, 'textdiff', before_path, after_path, '-g', 'java-treesitter'], 
-#   stdout=subprocess.PIPE, 
-#   env=env,
-# ).stdout.decode()
-
-# result = parse_gumtree_output(output)
-
-# import pprint
-# pprint.pprint(result)
-
-
-
-TS_OUTPUT_PATH = "build/language-java.so"
-TS_REPO_PATHS = ["../tree-sitter-java/"]
-TS_NAME = "java"
-
-Language.build_library(TS_OUTPUT_PATH, TS_REPO_PATHS)
-TS_JAVA_LANGUAGE = Language(TS_OUTPUT_PATH, TS_NAME)
-
-# PROJECT_PATH  = "/home/jonah/Projects/kyma-prototyping/java-test-projects/complex-numbers/"
-PROJECT_PATH = "/home/jonah/Projects/github.com/konveyor-ecosystem/kai/phase-2/java-test-projects/complex-numbers/"
-
-parser = Parser()
-parser.set_language(TS_JAVA_LANGUAGE)
-
-with open(before_path, 'r') as f:
-  file_before = f.read()
-tree_before = parser.parse(bytes(file_before, 'utf-8'))
-
-with open(after_path, 'r') as f:
-  file_after = f.read()
-tree_after = parser.parse(bytes(file_after, 'utf-8'))
-
-print(tree_before.root_node.children[1].children[1].child_by_field_name('name').text)
-print(tree_before.root_node.children[4].child_by_field_name('body').named_children[0].sexp())
-print(tree_before.root_node.children[4].child_by_field_name('body').named_children[0].child_by_field_name('declarator').end_point)
-print(tree_before.root_node.children[4].child_by_field_name('body').named_children[0].child_by_field_name('declarator').sexp())
-print(tree_before.root_node.children[4].child_by_field_name('body').named_children[0].child_by_field_name('declarator').start_byte)
-print(tree_before.root_node.children[4].child_by_field_name('body').named_children[0].child_by_field_name('declarator').end_byte)
-
-from codeplan import *
-from monitors4codegen.multilspy.multilspy_config import MultilspyConfig
-from monitors4codegen.multilspy.multilspy_logger import MultilspyLogger
+PROJECT_PATH = os.path.abspath("java-test-projects/complex-numbers/")
+GUMTREE_PATH = os.path.abspath('../gumtree-3.0.0/bin/gumtree')
+TREE_SITTER_PARSER_PATH = os.path.abspath('../tree-sitter-parser')
 
 LSP_CONFIG = MultilspyConfig.from_dict({"code_language": "java"})
 LSP_LOGGER = MultilspyLogger()
@@ -122,19 +78,30 @@ LSP = LanguageServer.create(
 )
 
 
+TS_OUTPUT_PATH = "build/language-java.so"
+TS_REPO_PATHS = [os.path.abspath("../tree-sitter-java/")]
+TS_NAME = "java"
+
+Language.build_library(TS_OUTPUT_PATH, TS_REPO_PATHS)
+TS_JAVA_LANGUAGE = Language(TS_OUTPUT_PATH, TS_NAME)
+
+parser = Parser()
+parser.set_language(TS_JAVA_LANGUAGE)
+
+
 async def do_it():
   async with LSP.start_server():
     ctx = CodePlanContext(
       language_server=LSP,
       repo_path=PROJECT_PATH,
       ts_language=TS_JAVA_LANGUAGE,
-      gumtree_path=gumtree_path,
-      tree_sitter_parser_path=tree_sitter_parser_path
+      gumtree_path=GUMTREE_PATH,
+      tree_sitter_parser_path=TREE_SITTER_PARSER_PATH
     )
 
 
-    uri = 'file:///home/jonah/Projects/github.com/konveyor-ecosystem/kai/phase-2/java-test-projects/complex-numbers/src/main/java/net/jsussman/dummyapp/ExampleClass.java'
-    with open('/home/jonah/Projects/github.com/konveyor-ecosystem/kai/phase-2/ExampleClass.diff', 'r') as f:
+    uri = f'file:///{PROJECT_PATH}/src/main/java/net/jsussman/dummyapp/ExampleClass.java'
+    with open('ExampleClass.diff', 'r') as f:
       diff = f.read()
 
     change = Change(
