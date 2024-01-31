@@ -66,7 +66,7 @@ def parse_gumtree_output(gumtree_output: str) -> list[dict]:
 
 
 PROJECT_PATH = os.path.abspath("java-test-projects/complex-numbers/")
-GUMTREE_PATH = os.path.abspath('../gumtree-3.0.0/bin/gumtree')
+GUMTREE_PATH = os.path.abspath('../gumtree/bin/gumtree')
 TREE_SITTER_PARSER_PATH = os.path.abspath('../tree-sitter-parser')
 
 LSP_CONFIG = MultilspyConfig.from_dict({"code_language": "java"})
