@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sort"
 
 	"github.com/go-logr/logr"
@@ -37,21 +38,22 @@ func NewAnalyzer(limitIncidents, limitCodeSnips, contextLines int, location, inc
 	)
 
 	// this function already init's the java provider
+	log.Info(fmt.Sprintf("lspServerPath: %s", lspServerPath))
 	jProvider, err := java.NewInternalProviderClient(ctx, log, contextLines, location, lspServerPath, bundles, depOpenSourceLabelsFile)
 	if err != nil {
 		cancelFunc()
-		return nil, err
+		return nil, fmt.Errorf("Failed to create InternalProviderClient: %+v", err)
 	}
 
 	bProvider, err := lib.GetProviderClient(provider.Config{Name: "builtin"}, log)
 	if err != nil {
 		cancelFunc()
-		return nil, err
+		return nil, fmt.Errorf("Failed to get ProviderClient: %+v", err)
 	}
 	_, err = bProvider.ProviderInit(context.Background(), []provider.InitConfig{{Location: location}})
 	if err != nil {
 		cancelFunc()
-		return nil, err
+		return nil, fmt.Errorf("Failed to init provider: %+v", err)
 	}
 
 	providers := map[string]provider.InternalProviderClient{
@@ -70,7 +72,7 @@ func NewAnalyzer(limitIncidents, limitCodeSnips, contextLines int, location, inc
 		if err != nil {
 			log.Error(err, "unable to parse all the rules for ruleset", "file", f)
 			cancelFunc()
-			return nil, err
+			return nil, fmt.Errorf("Failed to parse all the rules for the ruleset, %+v: %+v", f, err)
 		}
 		ruleSets = append(ruleSets, internRuleSet...)
 	}

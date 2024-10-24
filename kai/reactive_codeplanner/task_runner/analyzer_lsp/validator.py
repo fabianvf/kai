@@ -36,6 +36,8 @@ class AnalyzerLSPStep(ValidationStep):
     def __init__(self, config: RpcClientConfig) -> None:
         """This will start and analyzer-lsp jsonrpc server"""
 
+        self.config = config
+
         # trunk-ignore-begin(bandit/B603)
         rpc_server = subprocess.Popen(
             [
@@ -67,7 +69,7 @@ class AnalyzerLSPStep(ValidationStep):
                 cast(BufferedReader, rpc_server.stdout),
                 cast(BufferedWriter, rpc_server.stdin),
             ),
-            request_timeout=4 * 60,
+            request_timeout=4 * 600,
         )
         self.rpc.start()
 
@@ -76,7 +78,20 @@ class AnalyzerLSPStep(ValidationStep):
     def run(self) -> ValidationResult:
         logger.debug("Running analyzer-lsp")
 
+        # import pickle
+        # import os
+        # if os.path.exists("the-awesome-pickle.pickle"):
+        #     with open('the-awesome-pickle.pickle', 'rb') as f:
+        #         analyzer_output = cast(
+        #             JsonRpcResponse | JsonRpcError | None,
+        #             pickle.load(f)
+        #         )
+
+        # else:
         analyzer_output = self.__run_analyzer_lsp()
+        # file = open("the-awesome-pickle.pickle", "wb")
+        # pickle.dump(analyzer_output, file)
+        # file.close()
 
         # TODO: Possibly add messages to the results
         ValidationResult(
@@ -151,9 +166,12 @@ class AnalyzerLSPStep(ValidationStep):
                     class_to_use = AnalyzerRuleViolation
                     if "pom.xml" in i.uri:
                         class_to_use = AnalyzerDependencyRuleViolation
+
+                    parsed_uri = (urlparse(i.uri).path).lstrip("/")
+
                     validation_errors.append(
                         class_to_use(
-                            file=urlparse(i.uri).path,
+                            file=parsed_uri,
                             line=i.line_number,
                             column=-1,
                             message=i.message,

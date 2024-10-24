@@ -3,6 +3,9 @@ import logging
 from pathlib import Path
 
 from kai.kai_config import KaiConfig
+from kai.reactive_codeplanner.agent.dependency_agent.dependency_agent import (
+    MavenDependencyAgent,
+)
 from kai.reactive_codeplanner.task_manager.api import RpcClientConfig
 from kai.reactive_codeplanner.task_manager.task_manager import TaskManager
 from kai.reactive_codeplanner.task_runner.analyzer_lsp.task_runner import (
@@ -15,11 +18,14 @@ from kai.reactive_codeplanner.task_runner.compiler.compiler_task_runner import (
 from kai.reactive_codeplanner.task_runner.compiler.maven_validator import (
     MavenCompileStep,
 )
+from kai.reactive_codeplanner.task_runner.dependency.task_runner import (
+    DependencyTaskRunner,
+)
 from kai.reactive_codeplanner.vfs.git_vfs import RepoContextManager
 from kai_solution_server.service.llm_interfacing.model_provider import ModelProvider
 
 # Configure logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 
@@ -28,6 +34,12 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Run the CodePlan loop against a project"
     )
+    parser.add_argument(
+        "kai_config",
+        help="The path to the kai config file",
+        type=Path,
+    )
+
     parser.add_argument(
         "source_directory",
         help="The root directory of the project to be fixed",
@@ -78,7 +90,7 @@ def main() -> None:
         args.analyzer_lsp_server_binary,
         args.rules_directory,
         args.analyzer_lsp_path,
-        args.java_bundle_path,
+        args.analyzer_lsp_java_bundle,
         args.label_selector,
         args.incident_selector,
         None,
@@ -87,7 +99,7 @@ def main() -> None:
 
     logger.info("Starting reactive codeplanner with configuration: %s", config)
 
-    kai_config = KaiConfig.model_validate_filepath("../../kai/config.toml")
+    kai_config = KaiConfig.model_validate_filepath(args.kai_config)
     modelProvider = ModelProvider(kai_config.models)
 
     task_manager = TaskManager(
@@ -98,6 +110,9 @@ def main() -> None:
         agents=[
             AnalyzerTaskRunner(modelProvider.llm),
             MavenCompilerTaskRunner(modelProvider.llm),
+            DependencyTaskRunner(
+                MavenDependencyAgent(modelProvider.llm, config.repo_directory)
+            ),
         ],
     )
     logger.info("TaskManager initialized with validators and agents.")
@@ -112,4 +127,5 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    with __import__("ipdb").launch_ipdb_on_exception():
+        main()
