@@ -9,11 +9,16 @@
 #
 # requirements-build-constraints.txt pins wheel-only build deps to a sdist-
 # bearing version because pybuild-deps can't introspect wheels.
+#
+# requirements-constraints.txt caps upstream runtime deps that resolve to
+# versions which can't be built from source in Hermeto (e.g. fastmcp 2.13+
+# pulling the Rust-backed uv_build via py-key-value-aio).
 set -euo pipefail
 
 cd "$(dirname "$0")/../kai_mcp_solution_server"
 
-uv pip compile --generate-hashes pyproject.toml -o requirements.txt
+uv pip compile --generate-hashes --constraint requirements-constraints.txt \
+    pyproject.toml -o requirements.txt
 
 trap 'rm -f .build-input.tmp' EXIT
 cat requirements.txt requirements-build-constraints.txt > .build-input.tmp

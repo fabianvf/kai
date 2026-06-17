@@ -1,0 +1,15 @@
+# Runtime constraints applied during ../scripts/post-sync.sh's `uv pip compile`.
+#
+# Cap fastmcp below 2.13. fastmcp 2.13 introduced a dependency on
+# py-key-value-aio, whose build backend is uv_build -- a Rust crate. Hermeto
+# builds every dependency from source (no binary wheels), and uv_build 0.8.x
+# drags in maturin plus a Rust crate graph that cannot be vendored cleanly in
+# the hermetic build (maturin needs cargo edition2024, and uv_build's lockfile
+# mismatches the vendored crates, e.g. anstream 0.6.20 vs 0.6.21). fastmcp 2.12.x
+# pulls none of this, and the solution server only uses fastmcp's Context /
+# FastMCP API, which has been stable since well before 2.12.
+#
+# This file lives only in the midstream repo (upstream konveyor/kai never sees
+# it), so it does not interfere with the upstream -> midstream sync. Revisit if
+# upstream starts requiring fastmcp 2.13+ APIs.
+fastmcp<2.13

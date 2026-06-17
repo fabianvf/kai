@@ -333,7 +333,6 @@ cython==3.2.5 \
     --hash=sha256:f9b564f67b01bffa2521f475794b49f2787709cec1f91d5935a38eba37f2b359
     # via
     #   asyncpg
-    #   lupa
     #   numpy
     #   pyarrow
     #   pyyaml
@@ -361,7 +360,6 @@ flit-core==3.12.0 \
     # via
     #   aiosqlite
     #   click
-    #   cloudpickle
     #   coherent-licensed
     #   docutils
     #   flit-scm
@@ -378,6 +376,7 @@ flit-core==3.12.0 \
     #   pyparsing
     #   pyproject-metadata
     #   typing-extensions
+    #   werkzeug
     #   wheel
 flit-scm==1.7.0 \
     --hash=sha256:961bd6fb24f31bba75333c234145fff88e6de0a90fc0f7e5e7c79deca69f6bb2 \
@@ -402,8 +401,6 @@ hatch-vcs==0.5.0 \
     #   jsonschema
     #   jsonschema-specifications
     #   ollama
-    #   platformdirs
-    #   pydocket
     #   referencing
     #   urllib3
 hatchling==1.26.3 \
@@ -418,12 +415,10 @@ hatchling==1.30.1 \
     # via
     #   annotated-types
     #   attrs
-    #   beartype
     #   cyclopts
     #   dnspython
     #   docstring-parser
     #   expandvars
-    #   fakeredis
     #   fastmcp
     #   hatch-fancy-pypi-readme
     #   hatch-vcs
@@ -450,17 +445,10 @@ hatchling==1.30.1 \
     #   mcp
     #   ollama
     #   opentelemetry-api
-    #   opentelemetry-exporter-prometheus
-    #   opentelemetry-instrumentation
-    #   opentelemetry-sdk
-    #   opentelemetry-semantic-conventions
-    #   platformdirs
     #   pydantic
     #   pydantic-settings
-    #   pydocket
     #   pygments
     #   python-multipart
-    #   redis
     #   referencing
     #   starlette
     #   typing-inspection
@@ -479,13 +467,13 @@ jaraco-classes==3.4.0 \
     --hash=sha256:47a024b51d0239c0dd8c8540c6c7f484be3b8fcf0b2d85c13825780d3b3f3acd \
     --hash=sha256:f662826b6bed8cace05e7ff873ce0f9283b5c924470fe664fff1c2f00f581790
     # via keyring
-jaraco-context==6.1.0 \
-    --hash=sha256:129a341b0a85a7db7879e22acd66902fda67882db771754574338898b2d5d86f \
-    --hash=sha256:a43b5ed85815223d0d3cfdb6d7ca0d2bc8946f28f30b6f3216bda070f68badda
+jaraco-context==6.1.2 \
+    --hash=sha256:bf8150b79a2d5d91ae48629d8b427a8f7ba0e1097dd6202a9059f29a36379535 \
+    --hash=sha256:f1a6c9d391e661cc5b8d39861ff077a7dc24dc23833ccee564b234b81c82dfe3
     # via keyring
-jaraco-functools==4.4.0 \
-    --hash=sha256:9eec1e36f45c818d9bf307c8948eb03b2b56cd44087b3cdc989abca1f20b9176 \
-    --hash=sha256:da21933b0417b89515562656547a77b4931f98176eb173644c0d35032a33d6bb
+jaraco-functools==4.5.0 \
+    --hash=sha256:3bb5665ea4a020cf78a7040e89154c77edadb3ca74f366479669c5999aa70b03 \
+    --hash=sha256:79ce39246eddbde4b3a03b77ea5f0f7878dc669b166a66cf3fa8e266aa3fa2f4
     # via keyring
 jinja2==3.1.6 \
     --hash=sha256:0137fb05990d35f1275a587e9aee6d56da821fc83491a0fb838183be43f66d6d \
@@ -616,7 +604,6 @@ maturin==1.14.0 \
     #   pydantic-core
     #   rpds-py
     #   uuid-utils
-    #   uv-build
 mdurl==0.1.2 \
     --hash=sha256:84008a41e51615a49fc9966191ff91509e3c40b939176e643fd50a5c2196b8f8 \
     --hash=sha256:bb413d29f5eea38f31dd4754dd7377d4465116fb207585f97bf925588687c1ba
@@ -760,9 +747,7 @@ pathspec==1.1.1 \
 pdm-backend==2.4.9 \
     --hash=sha256:8d1064751dadb0c40b1026b46826a448d85c8228a564985c62fb53d4aba538a1 \
     --hash=sha256:c41a852ccbf4b567b033db9b2ae78660d7a4ea49307719959ab88a01f0aabb2e
-    # via
-    #   langchain-community
-    #   typer
+    # via langchain-community
 pkgconfig==1.6.0 \
     --hash=sha256:4a5a6631ce937fafac457104a40d558785a658bbdca5c49b6295bc3fd651907f \
     --hash=sha256:98e71754855e9563838d952a160eb577edabb57782e49853edb5381927e6bea1
@@ -785,7 +770,10 @@ poetry-core==2.4.1 \
     #   jsonschema-path
     #   langchain-azure-ai
     #   langchain-azure-dynamic-sessions
+    #   openapi-core
     #   openapi-pydantic
+    #   openapi-schema-validator
+    #   openapi-spec-validator
     #   pathable
     #   pkgconfig
     #   poetry-dynamic-versioning
@@ -856,7 +844,7 @@ setuptools-scm==10.0.5 \
     #   jaraco-context
     #   jaraco-functools
     #   keyring
-    #   pathvalidate
+    #   lazy-object-proxy
     #   pluggy
     #   pyarrow
     #   setuptools-rust
@@ -900,29 +888,6 @@ urllib3==2.6.3 \
     #   id
     #   requests
     #   twine
-uv-build==0.8.24 \
-    --hash=sha256:02e1256ac4524b06319a7fbfa30aa4959d9ef0b63076a959cce20a588448def8 \
-    --hash=sha256:21371860b6ed71dd55efc2cb1f3f98cff2d6d53fca7e0fe920465274ca062230 \
-    --hash=sha256:2f3caa27c2a3d453e8e93126361e4d3096d58cea5fb1793e997c603bb93cbee9 \
-    --hash=sha256:327af1cda22f00a9f3659c6417d68ee9d60a6c2be627e2e9e5ddd29396ae8eef \
-    --hash=sha256:791e2cca4ab4ea4d3c6326c90acd4568e6b9f7442014d631326657439f125e8f \
-    --hash=sha256:7c5eec2e8c0a3fec23030a0c99a4e5516927651d9c12cefe155899dc317fcb3c \
-    --hash=sha256:81840c4b00a8b7261998e059610f868ee8ef2794a9435c9e264caa9e2f6623d4 \
-    --hash=sha256:83d970f16cba618d05e38e7aa21119db52349cc8afc5dd65105ef203b6cf6b87 \
-    --hash=sha256:8934344a7a77ae8c5fe879068acf480836be0085319249b8baa4ca410e3d60f2 \
-    --hash=sha256:893549c7df3fd136f039aa513cfd45f993428afa5b6d288289d994cea716929c \
-    --hash=sha256:9072ff0dacf6ebfb9fed394e181ebd26cb2a16dc95697da8316b3eab49f76cc3 \
-    --hash=sha256:a6799918b553589e5881cbbc8896e2cddc057554dcb83c92b76dcfef80da8035 \
-    --hash=sha256:b761651d20e36369bfced14f02e9c4b2ee830897ac54fdb39b22d86bd7fe3ae7 \
-    --hash=sha256:bc132f28f76e4f047afa05b39149ea7bb63e591303150581f4ccbb7a215bda23 \
-    --hash=sha256:dcc3a4d4f1d20d77b9e2f5f7a6e06ab6998987b0bdf65f0f5f933d04596fcb82 \
-    --hash=sha256:eba86a9a88d02e923f927eecf26f896548bf0a890118c3f00a915a5906b05f38 \
-    --hash=sha256:ebe16ab8e7e4703ca3cc46054e5d77736c9ac90878113b16db1ad7cdbfa46a2f \
-    --hash=sha256:f0014ca61e8ab87fc3470eaef5ee10b675d9bd313ba4dbae2af71d1c0ec96617 \
-    --hash=sha256:febea2a2d2ddd6bb912cedc2c33ee72d842c7b5134b8614596c0e24d9f7e038a
-    # via
-    #   py-key-value-aio
-    #   py-key-value-shared
 uv-dynamic-versioning==0.14.0 \
     --hash=sha256:574fbc07e87ace45c01d55967ad3b864871257b98ff5b8ac87c261227ac8db5b \
     --hash=sha256:e087c346a786e98d41292ac2315180fb700cedfb30565fc973d64ce11a112387
@@ -943,16 +908,13 @@ wheel==0.47.0 \
     # via
     #   authlib
     #   azure-identity
-    #   cachetools
     #   google-crc32c
     #   google-genai
     #   httplib2
     #   httpx-sse
-    #   lupa
     #   mako
     #   meson
     #   python-dateutil
-    #   shellingham
     #   tiktoken
     #   tqdm
     #   tree-sitter-java
@@ -974,7 +936,6 @@ setuptools==82.0.1 \
     #   authlib
     #   azure-identity
     #   bottleneck
-    #   cachetools
     #   calver
     #   certifi
     #   cffi
@@ -995,7 +956,7 @@ setuptools==82.0.1 \
     #   jaraco-context
     #   jaraco-functools
     #   keyring
-    #   lupa
+    #   lazy-object-proxy
     #   mako
     #   markupsafe
     #   maturin
@@ -1003,9 +964,7 @@ setuptools==82.0.1 \
     #   multidict
     #   numexpr
     #   pathspec
-    #   pathvalidate
     #   pluggy
-    #   prometheus-client
     #   propcache
     #   proto-plus
     #   pyarrow
@@ -1015,14 +974,12 @@ setuptools==82.0.1 \
     #   pyperclip
     #   python-dateutil
     #   python-dotenv
-    #   python-json-logger
     #   pyyaml
     #   readme-renderer
     #   regex
     #   rich-rst
     #   setuptools-rust
     #   setuptools-scm
-    #   shellingham
     #   sniffio
     #   sqlalchemy
     #   sse-starlette
@@ -1038,7 +995,6 @@ setuptools==82.0.1 \
     #   vcs-versioning
     #   versioneer
     #   websockets
-    #   wrapt
     #   xxhash
     #   yarl
     #   zipp
