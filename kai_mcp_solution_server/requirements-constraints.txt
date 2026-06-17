@@ -1,5 +1,14 @@
 # Runtime constraints applied during ../scripts/post-sync.sh's `uv pip compile`.
 #
+# !!! TEMPORARY -- REMOVE ASAP !!!
+# This pin holds fastmcp/mcp at versions with known, unpatched CVEs (osv-scanner
+# flags them; they are suppressed via the `# trunk-ignore-all(osv-scanner)`
+# header that ../scripts/post-sync.sh injects into requirements.txt). It exists
+# ONLY to keep the deps source-buildable in Hermeto. The moment the Hermeto Rust
+# build is fixed (so fastmcp 2.14.2+ can build from source), delete this file's
+# pin AND that trunk-ignore header together, then regenerate. Track this as
+# tech debt and prioritize it -- we are knowingly shipping CVEs until then.
+#
 # Cap fastmcp below 2.13. fastmcp 2.13 introduced a dependency on
 # py-key-value-aio, whose build backend is uv_build -- a Rust crate. Hermeto
 # builds every dependency from source (no binary wheels), and uv_build 0.8.x

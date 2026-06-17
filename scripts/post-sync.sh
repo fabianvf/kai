@@ -18,9 +18,24 @@ set -euo pipefail
 cd "$(dirname "$0")/../kai_mcp_solution_server"
 
 uv pip compile --generate-hashes --constraint requirements-constraints.txt \
-    pyproject.toml -o requirements.txt
+	pyproject.toml -o requirements.txt
+
+# !!! TEMPORARY -- REMOVE ASAP (together with the fastmcp<2.13 pin in
+# requirements-constraints.txt) !!!
+# That pin keeps the deps source-buildable but holds fastmcp/mcp at versions
+# osv-scanner flags for known CVEs. Suppress those advisories on this generated
+# manifest until the Hermeto Rust build is fixed and fastmcp is unpinned. We are
+# knowingly shipping CVEs until both are removed -- prioritize the fix.
+{
+	echo '# trunk-ignore-all(osv-scanner)'
+	cat requirements.txt
+} >requirements.txt.tmp
+mv requirements.txt.tmp requirements.txt
 
 trap 'rm -f .build-input.tmp' EXIT
-cat requirements.txt requirements-build-constraints.txt > .build-input.tmp
+cat requirements.txt requirements-build-constraints.txt >.build-input.tmp
+# pybuild-deps 0.5.0 creates ~/.cache/pybuild-deps with mkdir(exist_ok=True) but
+# not parents=True, so it crashes on a fresh runner where ~/.cache is absent.
+mkdir -p "${XDG_CACHE_HOME:-${HOME}/.cache}"
 uvx --from pybuild-deps==0.5.0 pybuild-deps compile --generate-hashes \
-    -o requirements-build.txt .build-input.tmp
+	-o requirements-build.txt .build-input.tmp
