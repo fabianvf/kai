@@ -947,6 +947,7 @@ setuptools==82.0.1 \
     #   google-crc32c
     #   google-genai
     #   googleapis-common-protos
+    #   greenlet
     #   grpc-google-iam-v1
     #   httplib2
     #   httpx-sse

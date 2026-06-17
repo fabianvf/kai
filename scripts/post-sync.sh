@@ -17,7 +17,13 @@ set -euo pipefail
 
 cd "$(dirname "$0")/../kai_mcp_solution_server"
 
-uv pip compile --generate-hashes --constraint requirements-constraints.txt \
+# Resolve for the Linux/Python target the image is built for, not the host that
+# runs this script. Without --python-platform/--python-version, uv resolves for
+# the current machine, so a macOS dev drops Linux-only deps (e.g. greenlet) and
+# the hash-locked file drifts from what CI (Linux) regenerates.
+uv pip compile --generate-hashes \
+	--python-platform x86_64-unknown-linux-gnu --python-version 3.12 \
+	--constraint requirements-constraints.txt \
 	pyproject.toml -o requirements.txt
 
 # !!! TEMPORARY -- REMOVE ASAP (together with the fastmcp<2.13 pin in
