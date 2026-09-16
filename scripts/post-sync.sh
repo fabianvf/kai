@@ -48,8 +48,8 @@ cat requirements.txt requirements-build-constraints.txt >.build-input.tmp
 # shelve and try once more. Only the shelve goes - the sibling per-package
 # directories hold downloaded sdists that source.py reads before it reaches for
 # the network, and re-fetching those costs minutes.
-pybuild_cache="${XDG_CACHE_HOME:-$HOME/.cache}/pybuild-deps"
-mkdir -p "$pybuild_cache"
+pybuild_cache="${XDG_CACHE_HOME:-${HOME}/.cache}/pybuild-deps"
+mkdir -p "${pybuild_cache}"
 
 # pybuild-deps reaches straight into pip-tools' and pip's internals, and 0.5.0 is
 # the last release, so both have to be pinned with it. Unpinned, uvx resolves the
@@ -65,6 +65,7 @@ mkdir -p "$pybuild_cache"
 # happens to have an older `uv tool install pybuild-deps` lying around, because
 # uvx reuses that env instead of resolving - which is why this can break for one
 # person and not another. Revisit if pybuild-deps ever releases again.
+#
 # --no-annotate because the `# via` comments are not stable across environments.
 # Which parent a build dep gets attributed to depends on whether pybuild-deps
 # could parse each sdist's setup.py, and that varies: the same input here and on
@@ -72,14 +73,21 @@ mkdir -p "$pybuild_cache"
 # pins and hashes were identical, so the drift detector was failing on a comment.
 # Nothing installs from an annotation, so drop them and compare what matters.
 compile_build_deps() {
-    uvx --python 3.12 \
-        --from pybuild-deps==0.5.0 --with pip-tools==7.5.3 --with pip==26.1.2 \
-        pybuild-deps compile --generate-hashes --no-annotate \
-        -o requirements-build.txt .build-input.tmp
+	uvx --python 3.12 \
+		--from pybuild-deps==0.5.0 --with pip-tools==7.5.3 --with pip==26.1.2 \
+		pybuild-deps compile --generate-hashes --no-annotate \
+		-o requirements-build.txt .build-input.tmp
 }
 
-if ! compile_build_deps; then
-    echo "post-sync: pybuild-deps failed; dropping its memo cache and retrying once" >&2
-    find "$pybuild_cache" -maxdepth 1 -name 'find-build-deps*' -delete
-    compile_build_deps
+# Run it out of line rather than in an `if` condition, which would suppress
+# set -e for the whole call (shellcheck SC2310).
+set +e
+compile_build_deps
+compile_status=$?
+set -e
+
+if [[ ${compile_status} -ne 0 ]]; then
+	echo "post-sync: pybuild-deps failed; dropping its memo cache and retrying once" >&2
+	find "${pybuild_cache}" -maxdepth 1 -name 'find-build-deps*' -delete
+	compile_build_deps
 fi
