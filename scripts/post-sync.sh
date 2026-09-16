@@ -65,10 +65,16 @@ mkdir -p "$pybuild_cache"
 # happens to have an older `uv tool install pybuild-deps` lying around, because
 # uvx reuses that env instead of resolving - which is why this can break for one
 # person and not another. Revisit if pybuild-deps ever releases again.
+# --no-annotate because the `# via` comments are not stable across environments.
+# Which parent a build dep gets attributed to depends on whether pybuild-deps
+# could parse each sdist's setup.py, and that varies: the same input here and on
+# a runner disagreed about whether tomlkit came via uv-dynamic-versioning. The
+# pins and hashes were identical, so the drift detector was failing on a comment.
+# Nothing installs from an annotation, so drop them and compare what matters.
 compile_build_deps() {
     uvx --python 3.12 \
         --from pybuild-deps==0.5.0 --with pip-tools==7.5.3 --with pip==26.1.2 \
-        pybuild-deps compile --generate-hashes \
+        pybuild-deps compile --generate-hashes --no-annotate \
         -o requirements-build.txt .build-input.tmp
 }
 
