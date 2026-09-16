@@ -23,5 +23,46 @@ uv pip compile --generate-hashes pyproject.toml -o requirements.txt
 
 trap 'rm -f .build-input.tmp' EXIT
 cat requirements.txt requirements-build-constraints.txt >.build-input.tmp
-uvx --from pybuild-deps==0.5.0 pybuild-deps compile --generate-hashes \
-	-o requirements-build.txt .build-input.tmp
+
+# pybuild-deps memoizes sdist build-dep lookups in a shelve under
+# $XDG_CACHE_HOME/pybuild-deps. That cache wedges in two ways, both fatal and
+# neither self-healing, so every later run fails identically:
+#
+#   cache.py:26  CACHE_PATH.mkdir(exist_ok=True)  -- no parents=True, so a
+#                missing ~/.cache raises FileNotFoundError (seen on CI runners).
+#   cache.py:27  shelve.open(...)  -- an interrupted run leaves a shelve that
+#                dbm.whichdb() can't identify, raising
+#                "dbm.error: db type could not be determined".
+#
+# Both are recoverable: create the directory up front, and on failure drop the
+# shelve and try once more. Only the shelve goes - the sibling per-package
+# directories hold downloaded sdists that source.py reads before it reaches for
+# the network, and re-fetching those costs minutes.
+pybuild_cache="${XDG_CACHE_HOME:-$HOME/.cache}/pybuild-deps"
+mkdir -p "$pybuild_cache"
+
+# pybuild-deps reaches straight into pip-tools' and pip's internals, and 0.5.0 is
+# the last release, so both have to be pinned with it. Unpinned, uvx resolves the
+# newest of each and the run dies on whichever API moved:
+#
+#   pip-tools >=7.6.0  dropped `generate_hashes` from OutputWriter.__init__
+#     TypeError: OutputWriter.__init__() got an unexpected keyword argument 'generate_hashes'
+#   pip >26.1.2        added a required `allow_editables` to make_requirement_preparer
+#     TypeError: RequirementCommand.make_requirement_preparer() missing 1 required
+#     keyword-only argument: 'allow_editables'
+#
+# Only the version pinned here is known to work. It looks fine on a machine that
+# happens to have an older `uv tool install pybuild-deps` lying around, because
+# uvx reuses that env instead of resolving - which is why this can break for one
+# person and not another. Revisit if pybuild-deps ever releases again.
+compile_build_deps() {
+    uvx --from pybuild-deps==0.5.0 --with pip-tools==7.5.3 --with pip==26.1.2 \
+        pybuild-deps compile --generate-hashes \
+        -o requirements-build.txt .build-input.tmp
+}
+
+if ! compile_build_deps; then
+    echo "post-sync: pybuild-deps failed; dropping its memo cache and retrying once" >&2
+    find "$pybuild_cache" -maxdepth 1 -name 'find-build-deps*' -delete
+    compile_build_deps
+fi
