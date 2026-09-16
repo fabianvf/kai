@@ -19,7 +19,17 @@ cd "$(dirname "$0")/../kai_mcp_solution_server"
 # below and don't depend on this, but keeping uv.lock fresh avoids drift.
 uv lock
 
-uv pip compile --generate-hashes pyproject.toml -o requirements.txt
+# Resolve for the image we actually ship, not for whoever ran the sync. Without
+# these two flags uv resolves against the host interpreter and platform, so the
+# committed file depends on the machine: generating on macOS drops the
+# linux-only markers (greenlet, jeepney, secretstorage) from a file Hermeto
+# feeds into a RHEL9 build, and generating on 3.14 omits what 3.12 needs
+# (exceptiongroup and friends). That is also why verify-requirements-txt.yml
+# could never pass - it regenerates on 3.12/linux and diffed against a file
+# built on 3.14. Keep these in step with the workflow's python-version.
+uv pip compile --generate-hashes \
+	--python-version 3.12 --python-platform x86_64-unknown-linux-gnu \
+	pyproject.toml -o requirements.txt
 
 trap 'rm -f .build-input.tmp' EXIT
 cat requirements.txt requirements-build-constraints.txt >.build-input.tmp
@@ -56,7 +66,8 @@ mkdir -p "$pybuild_cache"
 # uvx reuses that env instead of resolving - which is why this can break for one
 # person and not another. Revisit if pybuild-deps ever releases again.
 compile_build_deps() {
-    uvx --from pybuild-deps==0.5.0 --with pip-tools==7.5.3 --with pip==26.1.2 \
+    uvx --python 3.12 \
+        --from pybuild-deps==0.5.0 --with pip-tools==7.5.3 --with pip==26.1.2 \
         pybuild-deps compile --generate-hashes \
         -o requirements-build.txt .build-input.tmp
 }
