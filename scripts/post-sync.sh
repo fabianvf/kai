@@ -29,6 +29,7 @@ uv lock
 # built on 3.14. Keep these in step with the workflow's python-version.
 uv pip compile --generate-hashes \
 	--python-version 3.12 --python-platform x86_64-unknown-linux-gnu \
+	-c requirements-constraints.txt \
 	pyproject.toml -o requirements.txt
 
 trap 'rm -f .build-input.tmp' EXIT
